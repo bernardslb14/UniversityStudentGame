@@ -19,7 +19,9 @@
 - UX & UI;
 - Inputs;
 - Events;
+- Images & Sprites;
 - Animations;
 - Collision Detection;
 - Artificial Intelligence;
+- Web Browser Cookies;
 
