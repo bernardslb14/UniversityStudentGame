@@ -1,0 +1,26 @@
+body
+{
+	margin: 0px;
+}
+
+canvas
+{
+	margin: auto;
+	display: block;
+	border: none;
+	background: url("../resources/menu/DODGE_FUNDO.png");
+}
+
+input {
+	background-color:rgba(0, 0, 0, 0);
+	margin: auto;
+	display: block;
+	position: absolute;
+	left: 210px;
+	top: 450px;
+	width: 600px;
+	height: 44px;
+	border: 2px solid black;
+	overflow:hidden;
+	font-size:40px;
+}

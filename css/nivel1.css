@@ -1,0 +1,12 @@
+body
+{
+	margin: 0px;
+}
+
+canvas
+{
+	margin: auto;
+	display: block;
+	border: none;
+	background: url("../resources/nivel1/Nivel_1_BG.png");
+}
