@@ -1,4 +1,4 @@
-# UniversityStudentGame
+# UniversityStudentsGame
 
 **Collaborators:** João Leite & José Reis & Nuno Silva
 
@@ -9,7 +9,8 @@
 **Project Title:** DODGE
 
 **Brief Description:** 
-- Soon...
+- This project was designed to recreate the routine of a university student during a night out in Coimbra.
+- The main character, a typical university student, has to go through three different scenarios to finish the game (during each stage, the student must catch some items and simultaneously dodge enemies). 
 <br/>
 
 
