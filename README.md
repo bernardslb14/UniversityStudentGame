@@ -16,4 +16,10 @@
 **Programming Languague:** ECMAScript (JavaScript) & HTML & CSS
 
 **Concepts:**
-- Soon...
+- UX & UI;
+- Inputs;
+- Events;
+- Animations;
+- Collision Detection;
+- Artificial Intelligence;
+
