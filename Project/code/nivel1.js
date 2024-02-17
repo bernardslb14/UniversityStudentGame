@@ -1,6 +1,6 @@
 "use strict";
 
-const audioVolume = 1;
+var audioVolume = 1;
 var pause = 0;
 var pauseTime = 0;
 var game_won = 0;
@@ -27,7 +27,7 @@ function main()
 	}
 
 	player_name=window.parent.player_name;
-	console.log(player_name);
+	audioVolume=window.parent.volume;
 
 	var mainW; //NEW
 	var mainMsg = function (ev){
@@ -38,17 +38,22 @@ function main()
 	var next_section = function(ev){
 		proximo(ev, mainW);
 	}
+	var game_over = function(ev){
+		perdeu(ev, mainW);
+	}
 
 	var canvas = document.getElementById("canvas");
 	var ctx = canvas.getContext("2d");
 
 	canvas.addEventListener("playgame", next_section); //NEW
+	canvas.addEventListener("gameover", game_over); //NEW
 
 	var player; //Player Sprite
 	var props; //Array de props
 	var mapa; //Regioes de Colisoes
 	var spArray;
 	var spHelp;
+	var boss;
 
 	canvas.addEventListener("initend", initEndHandler); //Acionado apenas dps dos componentes carregarem
 	init(ctx);
@@ -56,6 +61,7 @@ function main()
 	//som
 	var audio=document.getElementsByTagName("audio")[0];
 	audio.play();
+	audio.volume=audioVolume;
 
 	//Funcoes locais para gestao de eventos
 	function initEndHandler(ev)
@@ -70,12 +76,29 @@ function main()
 		props = ev.props;
 		mapa = ev.mapa;
 		spHelp = ev.spHelp;
+		boss = ev.boss;
 
-		spArray = new Array(1+mapa.n_props);
+		switch (current_lvl)
+		{
+			case 1:
+				player.speed = 2;
+				boss.speed = 1;
+				break;
+			case 2:
+				player.speed = 2;
+				boss.speed = 1.8;
+				break;
+			case 3:
+				player.speed = 2;
+				boss.speed = 1.9;
+				break;
+		}
+
+		spArray = new Array(2+mapa.n_props);
 		spArray[0]=player;
-		for(let i=1;i<=mapa.n_props; i++){
-			props[i-1].getRandomCoord(ctx, mapa);
-			spArray[i]=props[i-1];
+		spArray[1] = boss;
+		for(let i=0;i<mapa.n_props; i++){
+			spArray[i+2]=props[i];
 		}
 
 		//Iniciar animacao
@@ -102,11 +125,12 @@ function main()
 function init(ctx)
 {
 	var nLoad = 0;
-	var tLoad = 8;
+	var tLoad = 9;
 	var player;
 	var mapa;
 	var props;
 	var spHelp = new Array(5);
+	var boss;
 
 	//Estilo de texto para o timer
 	ctx.fillStyle = "#993333";
@@ -128,6 +152,11 @@ function init(ctx)
 			img2.addEventListener("load", imgLoadedHandler);
 			img2.id = "colisoes";
 			img2.src = "../resources/nivel1/Colision_LVL1.png";
+			
+			var img8 = new Image();
+			img8.addEventListener("load", imgLoadedHandler);
+			img8.id = "boss";
+			img8.src = "../resources/nivel1/BOSS_LVL1.png";
 			break;
 		case 2:
 		//Carrega o mapa de colisoes do background
@@ -135,6 +164,11 @@ function init(ctx)
 			img2.addEventListener("load", imgLoadedHandler);
 			img2.id = "colisoes";
 			img2.src = "../resources/nivel1/Colision_LVL2.png";
+			
+			var img8 = new Image();
+			img8.addEventListener("load", imgLoadedHandler);
+			img8.id = "boss";
+			img8.src = "../resources/nivel1/BOSS_LVL2.png";
 			break;
 		case 3:
 		//Carrega o mapa de colisoes do background
@@ -142,6 +176,11 @@ function init(ctx)
 			img2.addEventListener("load", imgLoadedHandler);
 			img2.id = "colisoes";
 			img2.src = "../resources/nivel1/Colision_LVL3.png";
+			
+			var img8 = new Image();
+			img8.addEventListener("load", imgLoadedHandler);
+			img8.id = "boss";
+			img8.src = "../resources/nivel1/BOSS_LVL3.png";
 			break;
 	}
 
@@ -183,17 +222,38 @@ function init(ctx)
 		switch (img.id)
 		{
 			case "player":
-				var sp1 = new Sprite(1000, 0, nw, nh,200,6,5, false, img);
-				sp1.speed = 2;
+				var sp1 = new Sprite(1000, 0, nw, nh,170,5,6, false, img);
 				sp1.movement = [];
 				player = sp1;
+				break;
+
+			case "boss":
+				var sp1 = new Sprite(0, 500, nw, nh,170,5,2, false, img);
+				sp1.forceMove = 0;
+				sp1.ponte = 0;
+				boss = sp1;
 				break;
 
 			case "colisoes":
 				var map = new Mapa(nw,nh,NaN, img);
 				mapa = map;
+				switch (current_lvl)
+				{
+					case 1:
+						mapa.n_props=8;
+						mapa.difficulty = 1/4;
+						break;
+					case 2:
+						mapa.n_props=4;
+						mapa.difficulty = 1/5;
+						break;
+					case 3:
+						mapa.n_props=6;
+						mapa.difficulty = 1/10;
+						break;
+				}
 				props = new Array(mapa.n_props);
-				tLoad = 8 + (mapa.n_props);
+				tLoad = 9 + (mapa.n_props);
 
 				switch (current_lvl)
 				{
@@ -209,7 +269,7 @@ function init(ctx)
 						var img2 = new Image();
 						img2.addEventListener("load", imgLoadedHandler);
 						img2.id = "props";
-						img2.src = "../resources/nivel1/Props_LVL1.png";
+						img2.src = "../resources/nivel1/Props_LVL2.png";
 						break;
 					case 3:
 					//Carrega os props
@@ -223,8 +283,19 @@ function init(ctx)
 			
 			case "props":
 				for(let i=0; i<mapa.n_props; i++){
-					var p1 = new Sprite(0,0,nw,nh,50,2,2,false,img);
+					switch (current_lvl){
+						case 1:
+							var p1 = new Sprite(0,500,nw,nh,50,2,2,false,img);
+							break;
+						case 2:
+							var p1 = new Sprite(0,500,nw,nh,200,2,2,false,img);
+							break;
+						case 3:
+							var p1 = new Sprite(0,500,nw,nh,50,2,2,false,img);
+							break;
+					}
 					props[i]=p1;
+					props[i].getRandomCoord(ctx, mapa);
 					nLoad++;
 				}
 
@@ -260,6 +331,7 @@ function init(ctx)
 			ev2.mapa = mapa;
 			ev2.props = props;
 			ev2.spHelp = spHelp;
+			ev2.boss = boss;
 			ctx.canvas.dispatchEvent(ev2);
 		}
 	}
@@ -327,6 +399,205 @@ function timeOperator(t)
 	return min + ':' + sec;
 }
 
+function animaBoss(spArray, map, dt, cw, ch, ctx)
+{
+	var player = spArray[0]; 
+	var boss = spArray[1];
+	var vector = new Array(2);
+	var movimento;
+	var ini;
+	dt = Math.round(dt/300);
+
+	vector[0] = player.x - boss.x;
+	vector[1] = (player.y - boss.y)*(-1);
+    if (current_lvl==3)
+    {
+    	var area1 = [ [ 0, 142 ], [ 0, 720 ], [ 1280, 720 ] ];
+    	var area2 = [ [ 0, 0 ], [ 0, 142 ], [ 1280, 0 ] , [ 1280, 720 ]];
+    	var area3 = [ [ 1280, 460 ], [ 700,460 ], [ 700, 720 ], [ 1280, 720 ]];
+    	var area4 = [ [ 625, 367 ], [ 1280, 367 ], [ 1280, 715 ], [ 623, 511 ]];
+    	if(boss.inside(area1) && player.inside(area2)){
+    		boss.ponte=1;
+    		vector[0] = 800 - boss.x;
+        	vector[1] = (550 - boss.y)*(-1);
+    	}
+    	if(boss.inside(area2) && player.inside(area1)){
+    		boss.ponte=2;
+    		vector[0] = 800 - boss.x;
+        	vector[1] = (500 - boss.y)*(-1);
+    	}
+    	if(boss.ponte=1)
+			if(boss.x>800 && boss.x<850 && boss.y>300 && boss.y<570){
+				vector[1] = 1;
+				boss.ponte =0;
+			}
+		if(boss.ponte=2)
+			if(boss.x>800 && boss.x<850 && boss.y>500 && boss.y<570){
+				vector[1] = 718;
+				boss.ponte =0;
+			}
+    }
+	//vector é o vetor movimento, é o vetor q liga, em linha reta o boss
+	//ao jogador
+
+	//Objetivo: descobrir o angulo alpha q o vetor faz com um referencial 
+	//imaginario de centro no boss
+	var tan_alpha = vector[1]/vector[0];
+	var alpha = Math.atan(tan_alpha); //Retorna um valor em [-pi/2;pi/2]
+	if (Math.abs(alpha) > Math.PI/4)
+	{
+		if (vector[1]>0)
+			movimento = "up";
+		else
+			movimento = "down";
+	}
+	else if (vector[0] > 0)
+	{
+		movimento = "right";
+	}
+	else
+	{
+		movimento = "left";
+	}
+
+	//if (Math.sqrt(vector[0]*vector[0]+vector[1]*vector[1]) < 2)
+	var divisao = 5; //divisao de 5 sec
+	var restRate = 1/3; //Fica parado 1/3 do tempo
+	switch (current_lvl){
+		case 1:
+			var divisao = 5;
+			var restRate = 1/3;
+			break;
+		case 2:
+			var divisao = 2;
+			var restRate = 1/3;
+			break;
+		case 3:
+			var divisao = 1;
+			var restRate = 1/3;
+			break;
+	}
+	if (!(Math.floor((dt*3/10)/divisao)%(1/restRate)))
+	{
+		movimento = "parado";
+	}
+
+	if (Math.sqrt((player.x - boss.x)*(player.x - boss.x)+(player.y - boss.y)*(player.y - boss.y)) < 20)
+	{
+		//ACABAR O JOGO, PERDESTE!
+		ctx.font = "bold 100px serif";
+		ctx.fillStyle = "red";
+		ctx.textAlign = "center";
+		ctx.fillText("GAME", canvas.width/2, canvas.height/2);
+		ctx.fillText("OVER!", canvas.width/2, canvas.height/2+100);
+		sleep(4000);
+		var ev4 = new Event("gameover");
+		ctx.canvas.dispatchEvent(ev4);
+	}
+
+	switch (boss.forceMove){
+		case 0:
+			break;
+		case 1:
+			boss.y+=boss.speed;
+			if (vector[0] > 0)
+				movimento = "right";
+			else
+				movimento = "left";
+			break;
+		case 2:
+			boss.y-=boss.speed;
+			if (vector[0] > 0)
+				movimento = "right";
+			else
+				movimento = "left";
+			break;
+		case 3:
+			boss.x+=boss.speed;
+			if (vector[1] > 0)
+				movimento = "up";
+			else
+				movimento = "down";
+			break;
+		case 4:
+			boss.x-=boss.speed;
+			if (vector[1] > 0)
+				movimento = "up";
+			else
+				movimento = "down";
+			break;
+	}
+	
+	switch (movimento){
+		case "up":
+			ini = boss.y;
+			boss.y-=boss.speed;
+			if (!boss.intersectsPixelCheck(map))
+			{
+				boss.forceMove = 0;
+				if (vector[0]>0)
+					boss.sprite = [(dt%4)+1,0];
+				else
+					boss.sprite = [(dt%4)+1,1];
+			}
+			else
+			{
+				boss.forceMove = 1;
+				boss.y = ini;
+			}
+			break;
+		case "down":
+			ini = boss.y;
+			boss.y+=boss.speed;
+			if (!boss.intersectsPixelCheck(map))
+			{
+				boss.forceMove = 0;
+				if (vector[0]>0)
+					boss.sprite = [(dt%4)+1,0];
+				else
+					boss.sprite = [(dt%4)+1,1];
+			}
+			else
+			{
+				boss.forceMove = 2;
+				boss.y = ini;
+			}
+			break;
+		case "left":
+			ini = boss.x;
+			boss.x-=boss.speed;
+			if (!boss.intersectsPixelCheck(map))
+			{
+				boss.forceMove = 0;
+				boss.sprite = [(dt%4)+1,1];
+			}
+			else
+			{
+				boss.forceMove = 3;
+				boss.x = ini;
+			}
+			break;
+		case "right":
+			ini = boss.x;
+			boss.x+=boss.speed;
+			if (!boss.intersectsPixelCheck(map))
+			{
+				boss.forceMove = 0;
+				boss.sprite = [(dt%4)+1,0];
+			}
+			else
+			{
+				boss.forceMove = 4;
+				boss.x = ini;
+			}
+			break;
+		case "parado":
+			boss.forceMove = 0;
+			boss.sprite = [0,0];
+		break;
+	}
+}
+
 function animaSprite(spArray, map, dt, cw, ch)
 {
 	var sp = spArray[0];
@@ -375,21 +646,32 @@ function animaSprite(spArray, map, dt, cw, ch)
 	else{
 		sp.sprite = [0,0];
 		if (sp.actionKey)
-			for(let i=1; i<=map.n_props; i++){
-				if(sp.intersectsPixelCheck(spArray[i])){
-					sp.sprite = [Math.floor(dt%4)+1,4];
-					if(spArray[i].percent>0){
-						spArray[i].percent-=map.difficulty;
-						if(spArray[i].percent<25){
-							spArray[i].sprite=[1,1]
-						}else if(spArray[i].percent>=25 && spArray[i].percent<50){
-							spArray[i].sprite=[0,1]
-						}else if(spArray[i].percent>=50 && spArray[i].percent<75){
-							spArray[i].sprite=[1,0]
+			for(let i=0; i<map.n_props; i++){
+				if(sp.intersectsPixelCheck(spArray[i+2])){
+					switch (current_lvl){
+						case 1:
+							sp.sprite = [Math.floor(dt%4)+1,4];
+							break;
+						case 2:
+							sp.sprite = [Math.floor(dt%4)+1,5];
+							break;
+						case 3:
+							sp.sprite = [Math.floor(dt%4)+1,4];
+							break;
+					}
+					
+					if(spArray[i+2].percent>0){
+						spArray[i+2].percent-=map.difficulty;
+						if(spArray[i+2].percent<25){
+							spArray[i+2].sprite=[1,1]
+						}else if(spArray[i+2].percent>=25 && spArray[i+2].percent<50){
+							spArray[i+2].sprite=[0,1]
+						}else if(spArray[i].percent>=50 && spArray[i+2].percent<75){
+							spArray[i+2].sprite=[1,0]
 						}
 					}else{
-						spArray.splice(i, 1);
-						map.n_props=spArray.length - 1;
+						spArray.splice(i+2, 1);
+						map.n_props=spArray.length - 2;
 						if(map.n_props==0){
 							game_won=1;
 						}
@@ -424,7 +706,6 @@ function render(ctx, spArray, map, reqID, dt, spHelp)
 				ctx.canvas.dispatchEvent(ev4);
 			}else{
 				setCookie(player_name,Math.round(final_time/1000),30); //Criar cookie com nome de utilizador
-				x.style.display = "none";
 				ctx.canvas.dispatchEvent(ev4);
 			}
 			
@@ -435,8 +716,9 @@ function render(ctx, spArray, map, reqID, dt, spHelp)
 		ctx.clearRect(0, 0, cw, ch);
 
 		//Anima sprite
-	
+		animaBoss(spArray, map, dt - pauseTime, cw, ch, ctx); //Anima boss
 		animaSprite(spArray, map, dt, cw, ch);
+		
 
 		draw(ctx, spArray);
 
@@ -477,7 +759,7 @@ function keyDownHandler(ev, spArray)
 			sp.actionKey = true;
 			break;
 
-		case "KeyH":
+		case "Escape":
 			var data = new Date();
 			
 			if (pause)
@@ -537,7 +819,7 @@ function canvasClickHandler(ev, ctx, spHelp, audio)
 	//aumentar o som
 	if (spHelp[3].clickedImage(ev))
 	{
-		if(audio.volume==audioVolume){
+		if(audio.volume==1){
 			return;
 		}
 		else{
@@ -548,18 +830,24 @@ function canvasClickHandler(ev, ctx, spHelp, audio)
 	//tirar/report o som
 	if (spHelp[4].clickedImage(ev))
 	{
-		if (audio.volume==audioVolume){
-		 	audio.volume=0;
+		if (audio.volume!=0){
+			audioVolume=0
+		 	audio.volume=audioVolume;
 		}
 		else {
-			audio.volume=audioVolume;
+			audio.volume=1;
 		}
 	}
 }
 
 function proximo(ev, mainW){
 	var event = ev.target;
+	window.parent.volume = audioVolume;
 	mainW.postMessage('nivel'+(current_lvl+1), '*');
+}
+function perdeu(ev, mainW){
+	var event = ev.target;
+	mainW.postMessage('menu', '*');
 }
 
 function setCookie(cname, cvalue, exdays) {
@@ -577,4 +865,12 @@ function setCookie(cname, cvalue, exdays) {
   	}
   	else
   		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
 }

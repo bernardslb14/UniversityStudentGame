@@ -1,6 +1,6 @@
 "use strict";
 
-const audioVolume = 1;
+var audioVolume = 1;
 
 (function()
 {	
@@ -301,8 +301,7 @@ function bubbleSort(list){
        for(var j = 1; j <= i; j++){
        	var l1 = list[j-1].split("=");
        	var l2 = list[j].split("=");
-       	//console.log(l1);
-       	//console.log(l2);
+
         if(l1[1] > l2[1]){
             var aux = list[j-1];
             list[j-1] = list[j];
@@ -353,6 +352,14 @@ function getCookie(ind,ca) {
   	return "";
 }
 
+function timeOperator(t)
+{
+	var min = Math.floor(t/60);
+	var sec = t - min*60;
+	min = min > 9 ? "" + min: "0" + min;
+	sec = sec > 9 ? "" + sec: "0" + sec; 
+	return min + ':' + sec;
+}
 
 //interacção com o rato
 function canvasClickHandler(ev, ctx, spMenu, spRank, spHelp, spBegin, audio)
@@ -401,7 +408,8 @@ function canvasClickHandler(ev, ctx, spMenu, spRank, spHelp, spBegin, audio)
 	    		let aux=utilizador.split("=");
 	    		if(aux[1]!="undefined"){
 			    	ctx.fillText(aux[0], 225, 115+i*60);
-			    	ctx.fillText(aux[1], 600, 115+i*60);
+			    	var tempo = timeOperator(aux[1]);
+			    	ctx.fillText(tempo, 600, 115+i*60);
 		    	}else{
 		    		ctx.fillText("---", 225, 115+i*60);
 	    			ctx.fillText("---", 600, 115+i*60);
@@ -437,28 +445,32 @@ function canvasClickHandler(ev, ctx, spMenu, spRank, spHelp, spBegin, audio)
 			return;
 		}
 		else{
-			audio.volume-=0.25;
+			audioVolume-=0.25;
+			audio.volume=audioVolume;
 		}
 	}
 
 	//aumentar o som
 	if (spHelp[3].clickedImage(ev))
 	{
-		if(audio.volume==audioVolume){
+		if(audio.volume==1){
 			return;
 		}
 		else{
-			audio.volume+=0.25;
+			audioVolume+=0.25;
+			audio.volume=audioVolume;
 		}
 	}
 
 	//tirar/report o som
 	if (spHelp[4].clickedImage(ev))
 	{
-		if (audio.volume==audioVolume){
-		 	audio.volume=0;
+		if (audio.volume!=0){
+			audioVolume=0
+			audio.volume=audioVolume;
 		}
 		else {
+			audioVolume=1;
 			audio.volume=audioVolume;
 		}
 	}
@@ -487,6 +499,7 @@ function canvasClickHandler(ev, ctx, spMenu, spRank, spHelp, spBegin, audio)
 			setCookie(x.value,undefined,30); //Criar cookie com nome de utilizador
 			x.style.display = "none";
 			window.parent.player_name = x.value;
+			window.parent.volume = audioVolume;
 			ctx.canvas.dispatchEvent(ev4);
 		}else{
 			x.style.backgroundColor = "red";

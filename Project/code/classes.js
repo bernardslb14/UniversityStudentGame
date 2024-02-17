@@ -10,7 +10,7 @@ class Mapa
 		this.height = h;
 		this.img = img;
 		this.regioes = regioes;
-		this.n_props = 2;
+		this.n_props = 0;
 		this.size = [w,h];
 
 		this.difficulty = 1/10;
@@ -31,7 +31,7 @@ class Mapa
 
 class Sprite
 {
-	constructor(x,y,w,h, tamanho, linhas, colunas, clickable, img)
+	constructor(x,y,w,h, tamanho, colunas, linhas, clickable, img)
 	{
 		this.x = x;
 		this.y = y;
@@ -58,6 +58,8 @@ class Sprite
 		this.imgData = this.getImageData(this.img);
 
 		this.percent = 0;
+
+		this.speed=1;
 	}
 
 	draw(ctx)
@@ -216,8 +218,8 @@ class Sprite
 	}
 
 	getRandomCoord(ctx, map){
-		this.x = Math.floor(Math.random() * ctx.canvas.width) + 5;
-		this.y = Math.floor(Math.random() * ctx.canvas.height) + 5;
+		this.x = Math.floor(Math.random() * ctx.canvas.width-this.size[0]-5) + 5;
+		this.y = Math.floor(Math.random() * ctx.canvas.height-this.size[1]-5) + 5;
 
 		this.sprite=[Math.floor(Math.random() * (this.linhas)),Math.floor(Math.random() * (this.colunas))];
 		var percent = this.sprite[0] + this.sprite[1] * this.linhas;
@@ -225,10 +227,26 @@ class Sprite
 
 
 		while(this.intersectsPixelCheck(map)){
-			this.x = Math.floor(Math.random() * (ctx.canvas.width-10)) + 10;
-			this.y = Math.floor(Math.random() * (ctx.canvas.height-10)) + 10;
+			this.x = Math.floor(Math.random() * (ctx.canvas.width-this.size[0]-5)) + 5;
+			this.y = Math.floor(Math.random() * (ctx.canvas.height-this.size[1]-5)) + 5;
 		}
 	}
+
+	inside(vs) {
+    var x = this.x, y = this.y;
+
+    var inside = false;
+    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        var xi = vs[i][0], yi = vs[i][1];
+        var xj = vs[j][0], yj = vs[j][1];
+
+        var intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+
+    return inside;
+};
 }
 
 class Placas
