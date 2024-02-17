@@ -11,7 +11,7 @@
 **Brief Description:** 
 - This project aimed to recreate the routine of a university student during a night out in Coimbra.
 - It is a 2D game that includes a playable character, a distinct NPC for each level, and some obstacles that were designed to make the gameplay challenging.
-- The main character has to go through three different scenarios to finish the game (during each stage the student must catch some items and simultaneously dodge enemies).
+- The main character has to walk through three different scenarios to finish the game (during each stage the student must catch some items and simultaneously dodge enemies).
 <br/>
 
 
