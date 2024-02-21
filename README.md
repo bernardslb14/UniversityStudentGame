@@ -15,7 +15,7 @@
 <br/>
 
 
-**Programming Languague:** ECMAScript (JavaScript) & HTML & CSS
+**Programming Languague:** ECMAScript (JavaScript)
 
 **Concepts:**
 - UX & UI;
